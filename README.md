@@ -27,3 +27,24 @@ calendar.set_time(hour=12, minute=0, is_pm=True)
 ```
 calendar.update(ticks=10)
 ```
+
+***
+## Date
+
+### How to Display Current Date
+```
+print(calendar.date_string())
+```
+
+### How to Change Date
+```
+calendar.set_date(day=31, month=12, year=1)
+```
+
+***
+## Misc.
+
+### How to Display Current Date and Time
+```
+print(calendar.datetime_string())
+```
