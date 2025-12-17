@@ -7,7 +7,7 @@ CQCalendar is a lightweight, tick-based time and calendar system for Python game
 ```
 import cqcalendar
 
-calendar = cqcalendar.CQCalendar(hour=9, minutes=0, is_pm=False, minutes_per_tick=1)
+calendar = cqcalendar.CQCalendar(hour=9, minute=0, is_pm=False, minutes_per_tick=1, day=1, month=1, year=1)
 ```
 
 ***
