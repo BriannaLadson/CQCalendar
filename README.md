@@ -11,22 +11,19 @@ calendar = cqcalendar.CQCalendar(hour=9, minutes=0, is_pm=False, minutes_per_tic
 ```
 
 ***
+## Time
 
-## How to Display Current Time
+### How to Display Current Time
 ```
 print(calendar.time_string())
 ```
 
-***
-
-## How to Change Time
+### How to Change Time
 ```
 calendar.set_time(hour=12, minute=0, is_pm=True)
 ```
 
-***
-
-## How to Increment Time
+### How to Increment Time
 ```
 calendar.update(ticks=10)
 ```
