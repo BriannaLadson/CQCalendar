@@ -1,13 +1,36 @@
 # CQCalendar
 CQCalendar is a lightweight, tick-based time and calendar system for Python games and simulations.
 
+It is designed for RPGs, sandbox sims, and systemic games, where time drives world behavior rather than just displaying a UI clock.
+
+***
+## Features
+* Tick-based and absolute time progression
+* Gregorian calendar with leap year support
+* Weekday tracking
+* Synodic lunar cycle (moon phases & illumination)
+* Event callbacks for hour/day/month/year changes
+* Designed for decoupled, systemic game logic
+* No external dependencies
+
 ***
 
 ## How to Create a Calendar for Your Game
 ```
 import cqcalendar
 
-calendar = cqcalendar.CQCalendar(hour=9, minute=0, is_pm=False, minutes_per_tick=1, day=1, month=1, year=1)
+calendar = cqcalendar.CQCalendar(
+  hour=9,
+  minute=0,
+  is_pm=False,
+  minutes_per_tick=1,
+  day=1,
+  month=1,
+  year=1,
+  weekday=0,
+  moon_age_days=0.0,
+  debug_callbacks=False,
+)
 ```
 
 ***
@@ -40,6 +63,88 @@ print(calendar.date_string())
 ```
 calendar.set_date(day=31, month=12, year=1)
 ```
+***
+
+## Absolute Time Advancement
+You can advance time directly without ticks.
+
+```
+calendar.add_minutes(30)
+calendar.add_hours(6)
+calendar.add_days(1)
+calendar.add_months(1)
+calendar.add_years(1)
+```
+
+Or you can do it in a single method.
+
+```
+calendar.add(days=3, hours=4)
+```
+
+***
+## Weekdays
+Weekdays are zero-indexed (0 = Monday, 6 = Sunday).
+
+### How to Display Weekday
+```
+print(calendar.weekday_name())
+```
+
+### How to Change Weekday
+```
+calendar.set_weekday(weekday=1)
+```
+
+***
+## Lunar Cycle
+CQCalendar includes a synodic lunar cycle (approximately 29.53 days)
+
+### How to Display Moon Phase
+```
+print(calendar.moon_phase_name())
+```
+
+### How to Get Moon Illumination
+```
+print(calendar.moon_illumination())
+```
+
+Useful for:
+* werewolf systems
+* rituals
+* night visibility
+* tides or magic strength
+
+***
+## Callbacks (Events)
+CQCalendar allows systems to react to time changes using callbacks.
+
+Callbacks are triggered when time crosses a boundary (hour/day/month/year), not continuously.
+
+### Hourly Event
+```
+def restock_shops(calendar):
+  if calendar.hour == 6 and not calendar.is_pm:
+    print("Shops restocked!")
+
+calendar.on_hour(restock_shops)
+```
+
+### Daily Event
+```
+def payday(calendar):
+  if calendar.day == 1:
+    print("Rent is due!")
+
+calendar.on_day(payday)
+```
+
+Available callbacks:
+* on_hour
+* on_day
+* on_month
+* on_year
 
 ***
 ## Misc.
