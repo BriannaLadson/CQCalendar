@@ -153,3 +153,7 @@ Available callbacks:
 ```
 print(calendar.datetime_string())
 ```
+
+***
+## Related Libraries
+* [TerraForge](https://github.com/BriannaLadson/TerraForge): A versatile Python toolset for procedural map generation.
