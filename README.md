@@ -14,6 +14,13 @@ It is designed for RPGs, sandbox sims, and systemic games, where time drives wor
 * No external dependencies
 
 ***
+## Installation
+You can install CQCalendar using [pip](https://pypi.org/project/cqcalendar/).
+
+```
+pip install cqcalendar
+```
+***
 
 ## How to Create a Calendar for Your Game
 ```
