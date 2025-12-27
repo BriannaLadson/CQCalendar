@@ -1,7 +1,20 @@
-__version__ = "1.0.0"
+__version__ = "1.1.0"
 
 class CQCalendar:
-	def __init__(self, hour=9, minute=0, is_pm=False, minutes_per_tick=1, day=1, month=1, year=1, weekday=0, moon_age_days=0.0, debug_callbacks=False):
+	def __init__(
+		self, 
+		hour=9, 
+		minute=0, 
+		is_pm=False, 
+		minutes_per_tick=1, 
+		day=1, 
+		month=1, 
+		year=1, 
+		weekday=0, 
+		moon_age_days=0.0, 
+		moon_phase=None, 
+		debug_callbacks=False
+	):
 		self.minutes_per_tick = max(1, int(minutes_per_tick))
 		
 		self.months = [
@@ -37,6 +50,12 @@ class CQCalendar:
 		self.synodic_month_days = 29.530588
 		
 		self.moon_age_days = float(moon_age_days) % self.synodic_month_days
+		
+		if moon_phase is not None:
+			self.set_moon_phase(moon_phase)
+			
+		else:
+			self.moon_age_days = float(moon_age_days) % self.synodic_month_days
 		
 		self.set_time(hour=hour, minute=minute, is_pm=is_pm)
 		self.set_date(day=day, month=month, year=year)
@@ -319,6 +338,33 @@ class CQCalendar:
 		phase_angle = (self.moon_age_days / self.synodic_month_days) * 2.0 * math.pi
 		
 		return 0.5 * (1.0 - math.cos(phase_angle))
+		
+	def set_moon_phase(self, phase_name):
+		phases = [
+			"New Moon",
+			"Waxing Crescent",
+			"First Quarter",
+			"Waxing Gibbous",
+			"Full Moon",
+			"Waning Gibbous",
+			"Last Quarter",
+			"Waning Crescent",
+		]
+		
+		if isinstance(phase_name, str):
+			phase_name = phase_name.strip().title()
+			
+			if phase_name not in phases:
+				raise ValueError(f"Invalid phase name: {phase_name}")
+				
+			index = phases.index(phase_name)
+			
+		else:
+			index = int(phase_name) % 8
+			
+		self.moon_age_days = (index / 8) * self.synodic_month_days
+		
+		return self.moon_age_days
 			
 	def time_string(self):
 		return f"{self.hour}:{self.minute:02d} {'PM' if self.is_pm else 'AM'}"
@@ -331,7 +377,7 @@ class CQCalendar:
 		return f"{self.date_string()} at {self.time_string()}"
 		
 if __name__ == "__main__":
-	calendar = CQCalendar(day=31, month=1, year=2024, weekday=0, moon_age_days=0.0)
+	calendar = CQCalendar(day=31, month=1, year=2024, weekday=0, moon_phase="Full Moon")
 	
 	def restock_shops(calendar):
 		if calendar.hour == 6 and not calendar.is_pm:
