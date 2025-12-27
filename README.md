@@ -36,6 +36,7 @@ calendar = cqcalendar.CQCalendar(
   year=1,
   weekday=0,
   moon_age_days=0.0,
+  moon_phase=None,
   debug_callbacks=False,
 )
 ```
@@ -111,6 +112,19 @@ CQCalendar includes a synodic lunar cycle (approximately 29.53 days)
 ```
 print(calendar.moon_phase_name())
 ```
+
+### How to Set Moon Phase
+```
+calendar.set_moon_phase("Waning Crescent")
+```
+
+The above is an alternative to using ```moon_age_days```:
+```
+# Precise numeric control still supported
+calendar = CQCalendar(moon_age_days=14.77) # Full Moon
+```
+
+If both ```moon_phase``` and ```moon_age_days``` are provided, ```moon_phase``` takes priority.
 
 ### How to Get Moon Illumination
 ```
