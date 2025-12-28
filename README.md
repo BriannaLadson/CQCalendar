@@ -1,4 +1,4 @@
-# CQCalendar v1.1.1
+# CQCalendar v1.1.0
 CQCalendar is a lightweight, tick-based time and calendar system for Python games and simulations.
 
 It is designed for RPGs, sandbox sims, and systemic games, where time drives world behavior rather than just displaying a UI clock.
