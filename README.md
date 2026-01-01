@@ -178,3 +178,4 @@ print(calendar.datetime_string())
 ***
 ## Related Libraries
 * [TerraForge](https://github.com/BriannaLadson/TerraForge): A versatile Python toolset for procedural map generation.
+* [MoonTex](https://github.com/BriannaLadson/MoonTex): A noise-based texture generator that creates realistic grayscale moon phase images.
