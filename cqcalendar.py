@@ -1,4 +1,4 @@
-__version__ = "1.1.0"
+__version__ = "1.1.1"
 
 class CQCalendar:
 	def __init__(
@@ -151,8 +151,6 @@ class CQCalendar:
 			
 		if minutes < 0:
 			raise ValueError("add_minutes does not support negative values.")
-			
-		self.advance_moon_by_minutes(minutes)	
 			
 		self.minute += minutes
 		
