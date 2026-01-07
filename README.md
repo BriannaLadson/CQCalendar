@@ -1,14 +1,21 @@
 # CQCalendar v1.2.1
-CQCalendar is a lightweight, tick-based time and calendar system for Python games and simulations.
+CQCalendar is a customizable, tick-based time and calendar system for Python games and simulations.
 
 It is designed for RPGs, sandbox sims, and systemic games, where time drives world behavior rather than just displaying a UI clock.
+
+CQCalendar supports custom calendars, custom lunar cycles, and advanced moon phase configuration, making it suitable for fantasy, sci-fi, and procedural worlds.
 
 ***
 ## Features
 * Tick-based and absolute time progression
-* Gregorian calendar with leap year support
-* Weekday tracking
-* Synodic lunar cycle (moon phases & illumination)
+* Fully custom calendar support
+* Custom month names & day counts
+* Custom weekday names
+* Optional Gregorian leap year logic
+* Custom synodic lunar cycle (length of moon cycle)
+* Custom moon phases (names, ranges, & colors)
+* Moon illumination calculation
+* Lunar phase JSON import/export
 * Event callbacks for hour/day/month/year changes
 * Designed for decoupled, systemic game logic
 * No external dependencies
@@ -27,17 +34,22 @@ pip install cqcalendar
 import cqcalendar
 
 calendar = cqcalendar.CQCalendar(
-  hour=9,
-  minute=0,
-  is_pm=False,
-  minutes_per_tick=1,
-  day=1,
-  month=1,
-  year=1,
-  weekday=0,
-  moon_age_days=0.0,
-  moon_phase=None,
-  debug_callbacks=False,
+	hour=9,
+	minute=0,
+	is_pm=False,
+	minutes_per_tick=1,
+	day=1,
+	month=1,
+	year=1,
+	weekday=0,
+	months=[
+		{"name": "Frostwane", "days": 31},
+		{"name": "Emberfall", "days": 28},
+		{"name": "Stonewake", "days": 31},
+	],
+	weekdays=["Firstday", "Secondday", "Thirdday", "Fourthday"],
+	synodic_month_days=20.0,
+	use_gregorian_leap_years=False,
 )
 ```
 
@@ -137,6 +149,38 @@ Useful for:
 * night visibility
 * tides or magic strength
 
+### Custom Moon Phases
+```
+moon_phases = [
+	{"name": "New Moon", "start": 0.00, "end": 0.10, "color_hex": "#000000"},
+	{"name": "Waxing Crescent", "start": 0.10, "end": 0.25, "color_hex": "#aaaaaa"},
+	{"name": "Blood Moon", "start": 0.45, "end": 0.55, "color_hex": "#ff0000"},
+]
+
+calendar = cqcalendar.CQCalendar(
+	moon_phases=moon_phases,
+	synodic_month_days=20.0,
+)
+```
+### Get Moon Color
+```
+print(calendar.moon_color_hex())
+print(calendar.moon_color_rgb())
+
+```
+
+### Lunar Phase JSON Import / Export
+CQCalendar supports importing and exporting lunar phase definitions via JSON.
+
+```
+calendar.export_lunar_phases_json("lunar_phases.json")
+```
+
+```
+calendar.import_lunar_phases_json("lunar_phases.json")
+```
+This allows CQCalendar to interoperate cleanly with tools such as [MoonTex](https://github.com/BriannaLadson/MoonTex) and future editors.
+
 ***
 ## Callbacks (Events)
 CQCalendar allows systems to react to time changes using callbacks.
@@ -173,6 +217,16 @@ Available callbacks:
 ### How to Display Current Date and Time
 ```
 print(calendar.datetime_string())
+```
+
+### Check Leap Year
+```
+print(calendar.is_leap_year())
+```
+
+### Internal Representation
+```
+print(repr(calendar))
 ```
 
 ***
