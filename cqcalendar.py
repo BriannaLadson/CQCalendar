@@ -1,4 +1,7 @@
-__version__ = "1.2.1"
+__version__ = "1.3.0"
+
+import json
+import os
 
 class CQCalendar:
 	def __init__(
@@ -426,6 +429,132 @@ class CQCalendar:
 			return self._default_moon_phases()
 
 		return normalized
+		
+	def export_settings_json(self, path_or_none=None, indent=2):
+		"""
+		Exports the full calendar configuration (time, date, calendar, lunar)
+		to a single JSON preset.
+
+		Schema:
+		{
+			"schema": "cqcalendar.settings",
+			"schema_version": 1,
+			"version": "1.3.0",
+			...
+		}
+		"""
+		payload = {
+			"schema": "cqcalendar.settings",
+			"schema_version": 1,
+			"version": __version__,
+
+			"time": {
+				"hour": self.hour,
+				"minute": self.minute,
+				"is_pm": self.is_pm,
+				"minutes_per_tick": self.minutes_per_tick,
+			},
+
+			"date": {
+				"day": self.day,
+				"month": self.month,
+				"year": self.year,
+				"weekday": self.weekday,
+			},
+
+			"calendar": {
+				"months": [
+					{"name": name, "days": days}
+					for name, days in self.months
+				],
+				"weekdays": list(self.weekdays),
+				"use_gregorian_leap_years": self.use_gregorian_leap_years,
+			},
+
+			"lunar": {
+				"synodic_month_days": float(self.synodic_month_days),
+				"moon_age_days": float(self.moon_age_days),
+				"moon_phases": list(self.moon_phases)
+					if self.moon_phases
+					else self._default_moon_phases(),
+			},
+		}
+
+		text = json.dumps(payload, indent=indent)
+
+		if path_or_none:
+			with open(str(path_or_none), "w", encoding="utf-8") as f:
+				f.write(text)
+
+		return text
+		
+	def import_settings_json(self, path_or_json_text):
+		"""
+		Imports a full calendar preset from:
+		- a file path, OR
+		- a JSON string
+		"""
+		src = str(path_or_json_text)
+
+		if os.path.exists(src) and os.path.isfile(src):
+			with open(src, "r", encoding="utf-8") as f:
+				payload = json.load(f)
+		else:
+			payload = json.loads(src)
+
+		if not isinstance(payload, dict):
+			raise ValueError("Invalid CQCalendar preset JSON")
+
+		if payload.get("schema") != "cqcalendar.settings":
+			raise ValueError("Invalid preset schema")
+
+		# --- Time ---
+		time = payload.get("time", {})
+		self.minutes_per_tick = int(time.get("minutes_per_tick", self.minutes_per_tick))
+		self.set_time(
+			hour=time.get("hour", self.hour),
+			minute=time.get("minute", self.minute),
+			is_pm=time.get("is_pm", self.is_pm),
+		)
+
+		# --- Date ---
+		date = payload.get("date", {})
+		self.set_date(
+			day=date.get("day", self.day),
+			month=date.get("month", self.month),
+			year=date.get("year", self.year),
+		)
+		self.set_weekday(date.get("weekday", self.weekday))
+
+		# --- Calendar ---
+		cal = payload.get("calendar", {})
+		if "months" in cal:
+			self.months = [
+				(str(m["name"]), int(m["days"]))
+				for m in cal.get("months", [])
+			]
+
+		if "weekdays" in cal:
+			self.weekdays = [str(w) for w in cal.get("weekdays", [])]
+
+		self.use_gregorian_leap_years = bool(
+			cal.get("use_gregorian_leap_years", self.use_gregorian_leap_years)
+		)
+
+		# --- Lunar ---
+		lunar = payload.get("lunar", {})
+		if "synodic_month_days" in lunar:
+			self.synodic_month_days = float(lunar["synodic_month_days"])
+
+		if "moon_phases" in lunar:
+			self.moon_phases = self._normalize_moon_phases(lunar["moon_phases"])
+
+		if "moon_age_days" in lunar:
+			self.moon_age_days = float(lunar["moon_age_days"]) % self.synodic_month_days
+
+		return self
+
+
 
 	def export_lunar_phases_json(self, path_or_none=None, indent=2):
 		"""
@@ -439,8 +568,6 @@ class CQCalendar:
 			"moon_phases": [ ... ]
 		}
 		"""
-		import json
-
 		payload = {
 			"schema": "cqcalendar.lunar_phases",
 			"schema_version": 1,
@@ -466,9 +593,6 @@ class CQCalendar:
 		- self.synodic_month_days (if present)
 		- self.moon_phases (normalized)
 		"""
-		import json
-		import os
-
 		if path_or_json_text is None:
 			raise ValueError("path_or_json_text cannot be None")
 

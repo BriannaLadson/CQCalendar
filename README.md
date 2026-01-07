@@ -1,4 +1,4 @@
-# CQCalendar v1.2.1
+# CQCalendar v1.3.0
 CQCalendar is a customizable, tick-based time and calendar system for Python games and simulations.
 
 It is designed for RPGs, sandbox sims, and systemic games, where time drives world behavior rather than just displaying a UI clock.
@@ -15,7 +15,8 @@ CQCalendar supports custom calendars, custom lunar cycles, and advanced moon pha
 * Custom synodic lunar cycle (length of moon cycle)
 * Custom moon phases (names, ranges, & colors)
 * Moon illumination calculation
-* Lunar phase JSON import/export
+* Full calendar preset JSON import/export
+* Lunar phase-only JSON import/export
 * Event callbacks for hour/day/month/year changes
 * Designed for decoupled, systemic game logic
 * No external dependencies
@@ -212,6 +213,20 @@ Available callbacks:
 * on_year
 
 ***
+## Full Calendar Preset
+CQCalendar can export all settings - time, date, calendar, and lunar - to one JSON file.
+
+### Export Full Preset
+```
+calendar.export_settings_json("my_calendar.json")
+```
+
+### Import Full Preset
+```
+calendar.import_settings_json("my_calendar.json")
+```
+
+***
 ## Misc.
 
 ### How to Display Current Date and Time
@@ -228,6 +243,10 @@ print(calendar.is_leap_year())
 ```
 print(repr(calendar))
 ```
+
+***
+## Related Tools
+* CQCalendar Studio: Visual calendar editor (coming soon)
 
 ***
 ## Related Libraries
