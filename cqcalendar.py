@@ -1,3 +1,5 @@
+__version__ = "1.4.0"
+
 import json
 import os
 import math
@@ -440,7 +442,6 @@ class CQCalendar:
 		{
 			"schema": "cqcalendar.settings",
 			"schema_version": 1,
-			"version": "1.3.0",
 			...
 		}
 		"""
@@ -697,3 +698,58 @@ class CQCalendar:
 
 	def datetime_string(self):
 		return f"{self.date_string()} at {self.time_string()}"
+		
+	def _time_to_minutes(self, hour, minute, is_pm):
+		hour = int(hour)
+		minute = int(minute)
+
+		hour = max(1, min(hour, 12))
+		minute = max(0, min(minute, 59))
+
+		# Convert to 24-hour minutes
+		# 12AM -> 0, 12PM -> 12
+		if bool(is_pm):
+			h24 = 12 if hour == 12 else hour + 12
+		else:
+			h24 = 0 if hour == 12 else hour
+
+		return h24 * 60 + minute
+
+	def is_night(
+		self,
+		night_start_hour=7,
+		night_start_is_pm=True,
+		night_end_hour=6,
+		night_end_is_pm=False,
+	):
+		"""
+		Returns True if the current time is within the night window.
+
+		Default: 7:00 PM -> 6:00 AM
+		Works with wrap-around ranges (PM -> AM).
+		"""
+		now = self._time_to_minutes(self.hour, self.minute, self.is_pm)
+
+		start = self._time_to_minutes(night_start_hour, 0, night_start_is_pm)
+		end = self._time_to_minutes(night_end_hour, 0, night_end_is_pm)
+
+		# Normal range (ex: 8PM -> 11PM)
+		if start < end:
+			return start <= now < end
+
+		# Wrap-around range (ex: 7PM -> 6AM)
+		return now >= start or now < end
+
+	def is_day(
+		self,
+		night_start_hour=7,
+		night_start_is_pm=True,
+		night_end_hour=6,
+		night_end_is_pm=False,
+	):
+		return not self.is_night(
+			night_start_hour=night_start_hour,
+			night_start_is_pm=night_start_is_pm,
+			night_end_hour=night_end_hour,
+			night_end_is_pm=night_end_is_pm,
+		)
