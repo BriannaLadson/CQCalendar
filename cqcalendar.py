@@ -1,7 +1,6 @@
-__version__ = "1.3.0"
-
 import json
 import os
+import math
 
 class CQCalendar:
 	def __init__(
@@ -342,7 +341,6 @@ class CQCalendar:
 		return info.get("color_rgb", (255, 255, 255))
 
 	def moon_illumination(self):
-		import math
 		phase_angle = (self.moon_age_days / self.synodic_month_days) * 2.0 * math.pi
 		return 0.5 * (1.0 - math.cos(phase_angle))
 
@@ -416,6 +414,9 @@ class CQCalendar:
 
 			color_hex = p.get("color_hex", "#ffffff")
 			color_rgb = p.get("color_rgb", (255, 255, 255))
+			
+			if isinstance(color_rgb, list):
+				color_rgb = tuple(color_rgb)
 
 			normalized.append({
 				"name": name,
@@ -443,6 +444,12 @@ class CQCalendar:
 			...
 		}
 		"""
+		
+		phases = list(self.moon_phases) if self.moon_phases else self._default_moon_phases()
+		for p in phases:
+			if isinstance(p, dict) and isinstance(p.get("color_rgb"), tuple):
+				p["color_rgb"] = list(p["color_rgb"])
+		
 		payload = {
 			"schema": "cqcalendar.settings",
 			"schema_version": 1,
@@ -474,9 +481,7 @@ class CQCalendar:
 			"lunar": {
 				"synodic_month_days": float(self.synodic_month_days),
 				"moon_age_days": float(self.moon_age_days),
-				"moon_phases": list(self.moon_phases)
-					if self.moon_phases
-					else self._default_moon_phases(),
+				"moon_phases": phases,
 			},
 		}
 
@@ -510,7 +515,7 @@ class CQCalendar:
 
 		# --- Time ---
 		time = payload.get("time", {})
-		self.minutes_per_tick = int(time.get("minutes_per_tick", self.minutes_per_tick))
+		self.minutes_per_tick = max(1, int(time.get("minutes_per_tick", self.minutes_per_tick)))
 		self.set_time(
 			hour=time.get("hour", self.hour),
 			minute=time.get("minute", self.minute),
@@ -568,11 +573,17 @@ class CQCalendar:
 			"moon_phases": [ ... ]
 		}
 		"""
+		phases = list(self.moon_phases) if self.moon_phases else self._default_moon_phases()
+		
+		for p in phases:
+			if isinstance(p, dict) and isinstance(p.get("color_rgb"), tuple):
+				p["color_rgb"] = list(p["color_rgb"])
+		
 		payload = {
 			"schema": "cqcalendar.lunar_phases",
 			"schema_version": 1,
 			"synodic_month_days": float(self.synodic_month_days),
-			"moon_phases": list(self.moon_phases) if self.moon_phases else self._default_moon_phases(),
+			"moon_phases": phases,
 		}
 
 		text = json.dumps(payload, indent=indent)
@@ -686,64 +697,3 @@ class CQCalendar:
 
 	def datetime_string(self):
 		return f"{self.date_string()} at {self.time_string()}"
-
-
-if __name__ == "__main__":
-	# Example: custom calendar + custom moon phases (Blood Moon included)
-	months = [
-		{"name": "Frostwane", "days": 31},
-		{"name": "Emberfall", "days": 28},
-		{"name": "Stonewake", "days": 31},
-	]
-
-	weekdays = ["Firstday", "Secondday", "Thirdday", "Fourthday"]
-
-	moon_phases = [
-		{"name": "New Moon", "start": 0.00, "end": 0.10, "color_hex": "#000000", "color_rgb": (0, 0, 0)},
-		{"name": "Waxing Crescent", "start": 0.10, "end": 0.25, "color_hex": "#aaaaaa", "color_rgb": (170, 170, 170)},
-		{"name": "First Quarter", "start": 0.25, "end": 0.35, "color_hex": "#dddddd", "color_rgb": (221, 221, 221)},
-		{"name": "Blood Moon", "start": 0.45, "end": 0.55, "color_hex": "#ff0000", "color_rgb": (255, 0, 0)},
-		{"name": "Waning Gibbous", "start": 0.55, "end": 0.70, "color_hex": "#dddddd", "color_rgb": (221, 221, 221)},
-		{"name": "Last Quarter", "start": 0.70, "end": 0.85, "color_hex": "#aaaaaa", "color_rgb": (170, 170, 170)},
-		{"name": "Waning Crescent", "start": 0.85, "end": 1.00, "color_hex": "#555555", "color_rgb": (85, 85, 85)},
-	]
-
-	# Build calendar
-	calendar = CQCalendar(
-		day=1,
-		month=1,
-		year=1,
-		weekday=0,
-		moon_age_days=0.0,
-		months=months,
-		weekdays=weekdays,
-		synodic_month_days=20.0,
-		use_gregorian_leap_years=False,
-		moon_phases=moon_phases,
-	)
-
-	# Export lunar phases JSON (file + string)
-	json_path = "lunar_phases_export.json"
-	exported_text = calendar.export_lunar_phases_json(json_path)
-
-	print("Exported JSON to:", json_path)
-	print(exported_text)
-	print(" ")
-
-	# Import lunar phases JSON into a fresh calendar (from file)
-	calendar2 = CQCalendar(
-		day=1,
-		month=1,
-		year=1,
-		weekday=0,
-	)
-
-	calendar2.import_lunar_phases_json(json_path)
-	calendar2.set_moon_phase("Blood Moon")
-
-	print(calendar2.datetime_string())
-	print(" ")
-	print(calendar2.moon_phase_name())
-	print(calendar2.moon_illumination())
-	print(calendar2.moon_color_hex())
-	print(calendar2.moon_color_rgb())
