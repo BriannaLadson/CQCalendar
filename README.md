@@ -1,4 +1,4 @@
-# CQCalendar v1.4.0
+# CQCalendar v1.5.0
 CQCalendar is a customizable, tick-based time and calendar system for Python games and simulations.
 
 It is designed for RPGs, sandbox sims, and systemic games, where time drives world behavior rather than just displaying a UI clock.
@@ -15,6 +15,7 @@ CQCalendar supports custom calendars, custom lunar cycles, and advanced moon pha
 * Custom synodic lunar cycle (length of moon cycle)
 * Custom moon phases (names, ranges, & colors)
 * Moon illumination calculation
+* Configurable day/night windows (hour + minute precision)
 * Full calendar preset JSON import/export
 * Lunar phase-only JSON import/export
 * Day/Night helper functions (is_night / is_day)
@@ -198,16 +199,19 @@ print(calendar.is_night())
 ```
 
 ### Use a Custom Night Window
-Example: 8:00 PM → 5:00 AM
+Example: 8:30 PM → 5:45 AM
 ```
 print(calendar.is_night(
 	night_start_hour=8,
+	night_start_minute=30,
 	night_start_is_pm=True,
 	night_end_hour=5,
+	night_end_minute=45,
 	night_end_is_pm=False,
 ))
-
 ```
+
+Night window settings can also be defined once on initialization and reused automatically.
 
 ### Check If It's Day
 ```

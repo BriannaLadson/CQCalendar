@@ -1,4 +1,4 @@
-__version__ = "1.4.0"
+__version__ = "1.5.0"
 
 import json
 import os
@@ -23,8 +23,22 @@ class CQCalendar:
 		synodic_month_days=29.530588,
 		use_gregorian_leap_years=True,
 		moon_phases=None,
+		night_start_hour=7,
+		night_start_minute=0,
+		night_start_is_pm=True,
+		night_end_hour=6,
+		night_end_minute=0,
+		night_end_is_pm=False,
 	):
 		self.minutes_per_tick = max(1, int(minutes_per_tick))
+		
+		self.night_start_hour = max(1, min(12, int(night_start_hour)))
+		self.night_start_minute = max(0, min(59, int(night_start_minute)))
+		self.night_start_is_pm = bool(night_start_is_pm)
+		
+		self.night_end_hour = max(1, min(12, int(night_end_hour)))
+		self.night_end_minute = max(0, min(59, int(night_end_minute)))
+		self.night_end_is_pm = bool(night_end_is_pm)
 
 		self.use_gregorian_leap_years = bool(use_gregorian_leap_years)
 
@@ -484,6 +498,16 @@ class CQCalendar:
 				"moon_age_days": float(self.moon_age_days),
 				"moon_phases": phases,
 			},
+			
+			"day_night": {
+				"night_start_hour": self.night_start_hour,
+				"night_start_minute": self.night_start_minute,
+				"night_start_is_pm": self.night_start_is_pm,
+				"night_end_hour": self.night_end_hour,
+				"night_end_minute": self.night_end_minute,
+				"night_end_is_pm": self.night_end_is_pm,
+			}
+
 		}
 
 		text = json.dumps(payload, indent=indent)
@@ -531,6 +555,18 @@ class CQCalendar:
 			year=date.get("year", self.year),
 		)
 		self.set_weekday(date.get("weekday", self.weekday))
+		
+		dn = payload.get("day_night", {})
+
+		self.night_start_hour = max(1, min(12, int(dn.get("night_start_hour", self.night_start_hour))))
+		self.night_start_minute = max(0, min(59, int(dn.get("night_start_minute", self.night_start_minute))))
+		self.night_start_is_pm = bool(dn.get("night_start_is_pm", self.night_start_is_pm))
+
+		self.night_end_hour = max(1, min(12, int(dn.get("night_end_hour", self.night_end_hour))))
+		self.night_end_minute = max(0, min(59, int(dn.get("night_end_minute", self.night_end_minute))))
+		self.night_end_is_pm = bool(dn.get("night_end_is_pm", self.night_end_is_pm))
+
+
 
 		# --- Calendar ---
 		cal = payload.get("calendar", {})
@@ -717,10 +753,12 @@ class CQCalendar:
 
 	def is_night(
 		self,
-		night_start_hour=7,
-		night_start_is_pm=True,
-		night_end_hour=6,
-		night_end_is_pm=False,
+		night_start_hour=None,
+		night_start_minute=None,
+		night_start_is_pm=None,
+		night_end_hour=None,
+		night_end_minute=None,
+		night_end_is_pm=None,
 	):
 		"""
 		Returns True if the current time is within the night window.
@@ -728,10 +766,32 @@ class CQCalendar:
 		Default: 7:00 PM -> 6:00 AM
 		Works with wrap-around ranges (PM -> AM).
 		"""
+		
+		if night_start_hour is None:
+			night_start_hour = self.night_start_hour
+		
+		if night_start_minute is None:
+			night_start_minute = self.night_start_minute
+		
+		if night_start_is_pm is None:
+			night_start_is_pm = self.night_start_is_pm
+
+		if night_end_hour is None:
+			night_end_hour = self.night_end_hour
+		
+		if night_end_minute is None:
+			night_end_minute = self.night_end_minute
+		
+		if night_end_is_pm is None:
+			night_end_is_pm = self.night_end_is_pm
+
+		
+		
 		now = self._time_to_minutes(self.hour, self.minute, self.is_pm)
 
-		start = self._time_to_minutes(night_start_hour, 0, night_start_is_pm)
-		end = self._time_to_minutes(night_end_hour, 0, night_end_is_pm)
+		start = self._time_to_minutes(night_start_hour, night_start_minute, night_start_is_pm)
+		end = self._time_to_minutes(night_end_hour, night_end_minute, night_end_is_pm)
+
 
 		# Normal range (ex: 8PM -> 11PM)
 		if start < end:
@@ -742,14 +802,18 @@ class CQCalendar:
 
 	def is_day(
 		self,
-		night_start_hour=7,
-		night_start_is_pm=True,
-		night_end_hour=6,
-		night_end_is_pm=False,
+		night_start_hour=None,
+		night_start_minute=None,
+		night_start_is_pm=None,
+		night_end_hour=None,
+		night_end_minute=None,
+		night_end_is_pm=None,
 	):
 		return not self.is_night(
 			night_start_hour=night_start_hour,
+			night_start_minute=night_start_minute,
 			night_start_is_pm=night_start_is_pm,
 			night_end_hour=night_end_hour,
+			night_end_minute=night_end_minute,
 			night_end_is_pm=night_end_is_pm,
 		)
