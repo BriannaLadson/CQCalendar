@@ -283,7 +283,11 @@ print(repr(calendar))
 
 ***
 ## Related Tools
-* CQCalendar Studio: Visual calendar editor (coming soon)
+### CQCalendar Studio
+
+![CQCalendar Studio](https://github.com/user-attachments/assets/8bc5fb07-ff89-429a-8fa0-67dbcc7bf283)
+
+* [CQCalendar Studio](https://payhip.com/b/QK0jZ): A standalone desktop tool for creating, editing, and exporting fully customizable calendar, time, weekday, and lunar systems for games, simulations, and worldbuilding projects.
 
 ***
 ## Related Libraries
